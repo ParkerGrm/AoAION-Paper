@@ -7,6 +7,7 @@
 \usepackage{array}
 \usepackage{booktabs}
 \usepackage{url}
+\usepackage{float}
 \emergencystretch=3em
 
 \begin{document}
@@ -163,9 +164,35 @@ PRN & File 1 & File A & Change \\
 \end{table}
 
 \subsection{Split Roof Antenna Results}
-% Results from the roof mounted antenna split configuration will be reported
-% here. This subsection should compare the paired channel behavior for the
-% B210 and KrakenSDR when both channels receive the same antenna signal.
+
+To evaluate long-term hardware phase drift, the split roof antenna configuration was used for both the KrakenSDR and the USRP B210, which operated continuously for 120 minutes. Signal recordings consisting of one-minute snapshots were collected at three distinct intervals: $t=0$ minutes, $t=60$ minutes, and $t=118$ minutes. This configuration transmits a common physical signal from a single static antenna into a Mini-Circuits ZC4PD-18-S+ 4-way RF splitter; any measured carrier phase difference between the paired channels is a combination of the receiver's internal hardware bias and the phase unbalance of the splitter itself. According to the manufacturer's performance data, the ZC4PD-18-S+ has a phase unbalance of approximately $0.37^{\circ}-0.6^{\circ}$ near the $1575.42$ MHz GPS L1 frequency, with a maximum rated phase unbalance of $6.0^{\circ}$.
+
+These datasets were processed through the slaved tracking architecture to compute the inter-channel carrier phase. The resulting phase means are summarized in Table IV. The KrakenSDR exhibited exceptional stability across the 2-hour window. Since the KrakenSDR utilizes an active, continuously tracking internal noise source to dynamically calibrate its RTL-SDR tuners, its mean phase difference remained around $114.7^{\circ}$ with standard deviations below $10^{\circ}$.
+
+On the other hand, the USRP B210 relies on the physical stability of its shared AD9361 Local Oscillator without active digital recalibration. The results demonstrate thermal drift during continuous operation. The mean phase for PRN 15 drifted by nearly $20^{\circ}$ (from $98.76^{\circ}$ to $118.48^{\circ}$), while PRN 25 drifted by over $22^{\circ}$. Furthermore, the high standard deviations (approximately $80^{\circ}$) observed across the B210 PRNs suggest substantial intra-epoch phase noise or coherence degradation as the silicon components heated up. These results imply that while the B210 exhibits repeatable bias upon cold restarts (as evaluated in Section III-C), long-term continuous AoA deployments may require periodic recalibration or thermal stabilization.
+
+\begin{table}[H]
+\centering
+\caption{LONG-TERM INTER-CHANNEL PHASE STABILITY (SPLIT ANTENNA)}
+\begin{tabular}{lcccc}
+\toprule
+Receiver & PRN & $T=0$ min & $T=60$ min & $T=118$ min \\
+         &     & Mean Bias & Mean Bias & Mean Bias \\
+\midrule
+KrakenSDR & 10 & $114.68^{\circ}$ & $115.02^{\circ}$ & $114.44^{\circ}$ \\
+          & 15 & $114.54^{\circ}$ & $114.94^{\circ}$ & $113.66^{\circ}$ \\
+          & 18 & $114.69^{\circ}$ & $114.90^{\circ}$ & $114.39^{\circ}$ \\
+\midrule
+USRP B210 & 5  & $121.63^{\circ}$ & $122.31^{\circ}$ & $111.77^{\circ}$ \\
+          & 15 & $98.76^{\circ}$  & $109.60^{\circ}$ & $118.48^{\circ}$ \\
+          & 25 & $119.13^{\circ}$ & $107.17^{\circ}$ & $96.74^{\circ}$  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Section 3.3}
+
+It is also critical to note the tolerances of the Mini-Circuits ZAPD-2-2+ RF Splitter when testing the hardware bias. According to the manufacturer's performance data, the ZAPD-2+ splitter exhibits a typical phase unbalance of approximately $0.23^{\circ}$ near the $1575.42$ MHz GPS L1 frequency, with a maximum rated phase unbalance of up to $2.0^{\circ}$. Therefore, the measured phase offsets are partially due to the RF splitter.
 
 \subsection{B210 Signal Generator Phase Bias Results}
 The B210 splitter test was used to measure the static inter channel phase bias, denoted as $\phi_0$. In this configuration, the same RF signal is applied to both receiver channels, so the expected geometric phase difference is zero. Any remaining measured inter channel phase offset is therefore attributed to the receiver channel phase bias rather than antenna geometry.
