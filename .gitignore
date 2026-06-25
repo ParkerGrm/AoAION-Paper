@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+
+# LaTeX build outputs
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+
+# Temporary/editor files
+*.bak
+*.tmp
+*~
+
+# Generated PDFs are reproducible from source. Remove this if you want to version PDFs.
+*.pdf

@@ -1,0 +1,197 @@
+\documentclass[conference]{IEEEtran}
+
+% Packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{cite}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{url}
+\emergencystretch=3em
+
+\begin{document}
+
+\title{Validating Low Cost GNSS Bearing Estimation with Satellites in the Sky}
+
+\author{
+\IEEEauthorblockN{Parker Graham}
+\IEEEauthorblockA{\textit{University of Colorado Boulder}}
+}
+
+\maketitle
+
+% =========================
+\begin{abstract}
+Global Navigation Satellite Systems (GNSS) are increasingly affected by radio frequency interference (RFI), motivating low cost systems capable of detecting and localizing interference sources. Time difference of arrival (TDOA) methods have demonstrated strong performance for broadband GNSS interference, but continuous wave (CW) emitters provide limited timing observability. Angle of arrival (AoA) measurements are therefore a useful complementary observable for narrowband interference localization. This paper presents a satellite based validation method for a compact two element AoA receiver implemented with a USRP B210 operating at GPS L1. The method uses visible GPS satellites as calibration and validation sources because broadcast ephemeris provides known satellite azimuth and elevation, while measured inter channel carrier phase provides the projection of each satellite line of sight vector onto the antenna baseline. The resulting baseline vector estimate is used to evaluate whether the B210 can support repeatable two element AoA measurements for GNSS signals in the sky, forming a foundation for future CW interference bearing estimation.
+\end{abstract}
+
+% =========================
+\section{Introduction}
+Global Navigation Satellite Systems (GNSS) provide positioning, navigation, and timing (PNT) for aviation, maritime operations, communications, emergency services, financial timing, and other critical infrastructure. Civil GNSS signals arrive at the Earth's surface with extremely low received power, making them vulnerable to intentional and unintentional radio frequency interference (RFI) \cite{amin2016vulnerabilities,rados2024recent}. Recent aviation studies using ADS-B and flight data have reported widespread GNSS jamming impacts across Eastern Europe, the Black Sea region, and the eastern Mediterranean, demonstrating that GNSS RFI is an operational safety concern rather than a purely theoretical vulnerability \cite{felux2024impacts,figuet2022jamming}.
+
+Localizing the source of interference is necessary for restoring healthy GNSS operations once an RFI event is detected. Gattis et al. demonstrated a real time TDOA system along the Polish coast of the Gulf of Gdansk that localized Baltic Sea jamming and spoofing sources using networked GNSS monitoring nodes \cite{gattis2026baltic}. That result shows the value of low size, weight, power, and cost (SWaP-C) monitoring systems in realistic interference environments. However, TDOA performs best when the received signal has sufficient timing structure or bandwidth. For continuous wave (CW) interference, timing observability is limited, making angle of arrival (AoA) an important complementary observable. Taylor et al. therefore proposed GNSS RFI localization through fusion of PDOA, TDOA, and AoA measurements, with AoA addressing cases where timing based methods are degraded \cite{taylor2024fusion}.
+
+Multi antenna GNSS processing has also been studied extensively for interference mitigation. Chen et al. demonstrated real time GPS L1 C/A controlled reception pattern antenna (CRPA) processing in a software receiver, including satellite specific beam steering and MVDR processing \cite{chen2010realtime}. Live jamming tests also showed that CRPA receivers built from inexpensive general purpose components could provide practical GNSS robustness \cite{chen2013validation}. The present work is narrower than a full CRPA implementation as it validates the two channel phase observable required for compact AoA sensing.
+
+The immediate motivation for this work comes from prior laboratory AoA testing with the KrakenSDR. The KrakenSDR is a five channel RTL SDR based receiver that uses a common clock, an internal noise source, and software correlation to estimate and correct per channel timing and phase offsets \cite{krakensdrDocs}. Correct bearing measurements were obtained after calibration, but the receiver had startup dependent channel phase biases, requiring recalibration after each power cycle. This behavior complicates field operation. The USRP B210 is considered here because it provides two receiver channels through the Analog Devices AD9361 transceiver and is advertised by Ettus Research as supporting coherent MIMO operation \cite{ettusB210,ad9361}. In contrast to the KrakenSDR observations, the B210 exhibited repeatable inter channel phase behavior across restarts, suggesting that a fixed calibration may remain valid unless the antenna geometry changes.
+
+This paper validates the B210 AoA measurement concept using GPS satellites themselves as known signal sources. Satellite ephemeris provides the azimuth and elevation of each tracked satellite, allowing its line of sight vector to be computed in the local east-north-up (ENU) frame. Measured inter channel carrier phase differences are then used to estimate the effective antenna baseline vector. This approach directly tests whether the receiver preserves geometrically meaningful phase differences before introducing an unknown emitter.
+
+% =========================
+\section{Methodology}
+
+\subsection{B210 USRP Recording}
+The receiver front end uses two uBlox ANN-MB-00-00 multiband active GNSS antennas connected to the two receiver channels of an USRP B210. The antennas are separated by approximately $3.75$~in. ($0.095$~m), which is approximately one half wavelength at GPS L1. Since $\lambda = c/f_{L1}$ and $f_{L1}=1575.42$~MHz, the GPS L1 wavelength is approximately $0.190$~m, giving $\lambda/2 \approx 0.095$~m. This spacing was selected to reduce spatial phase ambiguity \cite{doan2023phase}.
+
+Because the ANN-MB-00-00 antennas are active antennas, each RF path includes an external bias tee to supply DC power to the antenna low noise amplifier while passing the received L1 signal to the radio. The two antenna paths are connected to the B210 receive inputs RF~A/RX2 and RF~B/RX2, corresponding to the two digitized receiver channels. The resulting hardware configuration is shown in Fig.~\ref{fig:b210_setup}. The B210 is well suited for AoA calculations as the platform is specified for coherent MIMO operation \cite{ettusB210,ad9361}. Additionally the requirement where the phase bias between the two channels be stable across power cycles is satisfied by the B210, as demonstrated in the results section.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{photos/b210_setup.jpeg}
+\caption{B210 data collection setup with two active GNSS antennas mounted on a fixed plate, external bias tees, and the dual channel USRP B210 receiver.}
+\label{fig:b210_setup}
+\end{figure}
+
+Dual channel samples are recorded using the UHD multi channel receiver interface so that both B210 channels are streamed under the same device timing configuration. The resulting binary recordings are processed by a MATLAB GNSS software receiver based on [cite Dr. Akos]. Channel~0 is tracked using a conventional closed loop GPS L1 C/A tracking chain. Channel~1 is then processed in a slaved configuration using the code and carrier tracking states from Channel~0. This produces a per satellite inter channel carrier phase measurement while ensuring that both antenna channels are compared using the same satellite code phase, carrier frequency, and carrier phase reference.
+
+
+\subsection{KrakenSDR Recording}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\linewidth]{photos/kraken_daq_sharpened_crisp.png}
+\caption{KrakenRF/HeIMDALL data acquisition firmware architecture used for coherent multi-channel sample capture and startup calibration. Adapted from the HeIMDALL/Kerberos SDR DAQ documentation \cite{peto2020heimdall}.}
+\label{fig:kraken_daq}
+\end{figure}
+
+KrakenSDR data was collected using the KrakenRF data acquisition software, which records raw $8$ bit I/Q samples from the receiver's five RTL-SDR channels. The DAQ architecture used for this workflow is shown in Fig.~\ref{fig:kraken_daq}. The Realtek DAQ block receives samples from each RTL-SDR and writes them to circular buffers. The downstream processing chain then re buffers the streams, applies decimation, and estimates residual inter channel delay, gain, and phase corrections using the receiver's internal calibration source. This startup calibration is required so that the five receiver channels share a common phase reference. Although the diagram is from the HeIMDALL/Kerberos SDR DAQ documentation, the Kerberos SDR and KrakenSDR use the same RTL-SDR based receiver architecture, with the primary hardware difference being that the Kerberos SDR provides four channels while the KrakenSDR provides five \cite{peto2020heimdall}. This runtime calibration is not required for the B210.
+
+For this study, the KrakenRF software was used for calibrated recording rather than real time direction finding. After the DAQ software completed its startup calibration, the calibrated multi channel I/Q streams were saved for post processing. This preserved the channel alignment established by the KrakenSDR calibration procedure while allowing the recordings to be processed using the same phase bias and GNSS carrier phase analysis applied to the B210 data. 
+
+\subsection{Phase Angle Difference Calculation}
+The phase comparison is performed from the tracked prompt in phase and quadrature samples. For each selected PRN and time window, the master channel prompt components are first inspected as $I_P$ and $Q_P$, and the paired channel prompt components are inspected as $I_{PB}$ and $Q_{PB}$. The paired channel is then represented as a complex prompt sample sequence,
+
+\begin{equation}
+z_B[n] = I_{PB}[n] + jQ_{PB}[n].
+\end{equation}
+
+The raw phase angle for the paired channel is computed from the argument of this complex sequence and converted to degrees,
+
+\begin{equation}
+\phi_{\mathrm{raw}}[n] =
+\frac{180}{\pi}\arg\left(z_B[n]\right).
+\end{equation}
+
+To match the analysis procedure used for the phase consistency check, negative phase values are shifted by $180^\circ$,
+
+\begin{equation}
+\phi_{\mathrm{adj}}[n] =
+\begin{cases}
+\phi_{\mathrm{raw}}[n] + 180^\circ, & \phi_{\mathrm{raw}}[n] < 0,\\
+\phi_{\mathrm{raw}}[n], & \phi_{\mathrm{raw}}[n] \geq 0.
+\end{cases}
+\end{equation}
+
+The adjusted phase sequence is then averaged over the selected time window to produce the reported phase angle for that PRN and collection. This procedure is applied consistently across the selected receiver channels so that the same phase-angle calculation can be compared across the test configurations.
+
+\subsection{Test Configurations}
+The test configurations are designed to compare inter channel phase behavior under three controlled collection conditions. Together, these configurations separate the effects of antenna geometry, receiver channel alignment, and static phase bias so that the B210 and KrakenSDR can be evaluated using the same general signal analysis where applicable.
+
+The first configuration uses a two antenna array. For the B210, this configuration maps directly onto the two available receive ports, with one antenna connected to each channel. For the five channel KrakenSDR, two receiver ports are selected and grouped together for a given test. Treating the KrakenSDR as a two channel subset allows the same two antenna analysis to be applied to both receivers and provides a direct comparison against the B210 test configuration. INSERT PHOTO OF TWO ANTENNA ARRAY HERE
+
+The second configuration uses a roof mounted antenna on the Anne J. Smead Aerospace Engineering Sciences building. In this configuration, the antenna output is split to the two receiver channels under test. The split antenna configuration is used for both the KrakenSDR and the B210, and the same signal analysis is performed on both receivers. This configuration provides a common input signal to the paired channels, which is useful for evaluating channel alignment without changing the downstream analysis method. INSERT PHOTO OF ROOF ANTENNA SPLIT HERE
+
+The third configuration uses a signal generator input. This configuration is used only with the B210 and is intended to estimate the B210 inter channel phase bias. A controlled signal generator input is useful because the receiver channels can be driven by a known common signal, allowing the measured phase offset between the two channels to be interpreted as a receiver channel bias for that configuration.
+
+\section{Results}
+
+\subsection{Two Antenna Array Results}
+The KrakenSDR two channel subset was evaluated using four processed tracking datasets. The first two datasets correspond to the same selected Kraken channel pair before and after a power cycle. The next two datasets correspond to a different selected Kraken channel pair, also separated by a power cycle. This configuration follows the same two channel structure used by the B210, allowing the KrakenSDR to be evaluated in a comparable two-port arrangement.
+
+Figure~\ref{fig:kraken_prn05_iq_first_cycle} shows the tracked prompt I/Q samples for PRN~5 from the first two Kraken datasets. The figure includes only the master and paired-channel I/Q traces so that the before and after power-cycle behavior can be compared directly without the additional phase diagnostic panels.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{photos/kraken_prn05_iq_first_power_cycle.png}
+\caption{KrakenSDR PRN~5 prompt I/Q traces for the first selected two-channel pair before and after the first power cycle.}
+\label{fig:kraken_prn05_iq_first_cycle}
+\end{figure}
+
+The adjusted phase means from the processed PRN figures are summarized in Table~\ref{tab:kraken_two_channel_phase}. PRNs~5, 13, and 18 were selected as representative examples from the processed plots. For the first selected channel pair, PRN~5 and PRN~18 show small changes after the power cycle, while PRN~13 shows a larger but still directly visible shift in the plotted mean. The second selected channel pair produces a different set of mean phase values, as expected when a different KrakenSDR channel grouping is used.
+
+\begin{table}[h]
+\centering
+\caption{KrakenSDR adjusted phase means for selected PRNs}
+\label{tab:kraken_two_channel_phase}
+\begin{tabular}{ccccccc}
+\toprule
+PRN & Set 1 & Set 2 & Change & Set 3 & Set 4 & Change \\
+ & (deg) & (deg) & (deg) & (deg) & (deg) & (deg) \\
+\midrule
+5  & 103.6 & 106.3 &  +2.7 & 72.9 & 131.9 & +59.0 \\
+13 & 152.6 & 142.4 & -10.2 & 51.0 & 122.3 & +71.3 \\
+18 & 133.9 & 136.0 &  +2.0 & 43.9 & 102.8 & +58.9 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The B210 processing figures were reviewed using the same phase calculation approach. The available B210 plots include PRNs~10, 18, and 32, with each plot comparing File~1 (Boot~1) against File~A (Boot~A). Figure~\ref{fig:b210_prn10_iq_cycle} shows the prompt I/Q traces for PRN~10, again with the phase panels removed so that the master and paired-channel samples can be compared directly.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{photos/b210_prn10_iq_power_cycle.png}
+\caption{B210 PRN~10 prompt I/Q traces for File~1 and File~A in the two antenna configuration.}
+\label{fig:b210_prn10_iq_cycle}
+\end{figure}
+
+The adjusted phase means read from the B210 processing figures are summarized in Table~\ref{tab:b210_two_channel_phase}. The selected PRNs show changes ranging from $1.37^\circ$ to $12.38^\circ$ between the two B210 collections.
+
+\begin{table}[h]
+\centering
+\caption{B210 adjusted phase means for selected PRNs}
+\label{tab:b210_two_channel_phase}
+\begin{tabular}{cccc}
+\toprule
+PRN & File 1 & File A & Change \\
+ & (deg) & (deg) & (deg) \\
+\midrule
+10 & 114.90 & 116.27 &  +1.37 \\
+18 & 117.44 & 105.06 & -12.38 \\
+32 & 116.15 & 122.72 &  +6.57 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Split Roof Antenna Results}
+% Results from the roof mounted antenna split configuration will be reported
+% here. This subsection should compare the paired channel behavior for the
+% B210 and KrakenSDR when both channels receive the same antenna signal.
+
+\subsection{B210 Signal Generator Phase Bias Results}
+The B210 splitter test was used to measure the static inter channel phase bias, denoted as $\phi_0$. In this configuration, the same RF signal is applied to both receiver channels, so the expected geometric phase difference is zero. Any remaining measured inter channel phase offset is therefore attributed to the receiver channel phase bias rather than antenna geometry.
+
+The controlled splitter measurements showed that the B210 channel bias was repeatable across receiver restarts. A signal generator produced a sinusoidal test signal at GPS L1, which was divided with an RF splitter and applied to both B210 receive inputs. The B210 recorded both channels using the same multi channel receive configuration used for the satellite collections, so the measurement tested the phase repeatability of the receiver configuration used in the data collection.
+
+Two repeatability checks were performed. In the first check, two recordings were separated by a full B210 power cycle. The measured phase bias changed from $-2.40^\circ$ to $-2.48^\circ$, a difference of $0.08^\circ$. In the second check, the receiver was operated for two hours before repeating the power cycle test. The measured phase bias changed from $-2.03^\circ$ to $-2.19^\circ$, a difference of $0.16^\circ$. These results, summarized in Table~\ref{tab:b210_bias_stability}, indicate that the mean inter channel phase bias remained stable at the sub degree level for the tested receiver configuration.
+
+\begin{table}[h]
+\centering
+\caption{B210 splitter-measured inter channel phase bias repeatability}
+\label{tab:b210_bias_stability}
+\begin{tabular}{lccc}
+\toprule
+Condition & Mean Bias & Std. Dev. & Change \\
+ & (deg) & (deg) & (deg) \\
+\midrule
+Initial recording & $-2.40$ & $2.10$ & -- \\
+After power cycle & $-2.48$ & $2.12$ & $0.08$ \\
+After two hour operation & $-2.03$ & $2.11$ & -- \\
+After hot power cycle & $-2.19$ & $2.11$ & $0.16$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =========================
+\bibliographystyle{IEEEtran}
+\bibliography{myBib}
+\end{document}
