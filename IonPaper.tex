@@ -120,7 +120,7 @@ Figure~\ref{fig:kraken_prn05_iq_first_cycle} shows the tracked prompt I/Q sample
 
 The adjusted phase means from the processed PRN figures are summarized in Table~\ref{tab:kraken_two_channel_phase}. PRNs~5, 13, and 18 were selected as representative examples from the processed plots. For the first selected channel pair, PRN~5 and PRN~18 show small changes after the power cycle, while PRN~13 shows a larger but still directly visible shift in the plotted mean. The second selected channel pair produces a different set of mean phase values, as expected when a different KrakenSDR channel grouping is used.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{KrakenSDR adjusted phase means for selected PRNs}
 \label{tab:kraken_two_channel_phase}
@@ -147,7 +147,7 @@ The B210 processing figures were reviewed using the same phase calculation appro
 
 The adjusted phase means read from the B210 processing figures are summarized in Table~\ref{tab:b210_two_channel_phase}. The selected PRNs show changes ranging from $1.37^\circ$ to $12.38^\circ$ between the two B210 collections.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{B210 adjusted phase means for selected PRNs}
 \label{tab:b210_two_channel_phase}
@@ -190,18 +190,17 @@ USRP B210 & 5  & $121.63^{\circ}$ & $122.31^{\circ}$ & $111.77^{\circ}$ \\
 \end{tabular}
 \end{table}
 
-\subsection{Section 3.3}
-
-It is also critical to note the tolerances of the Mini-Circuits ZAPD-2-2+ RF Splitter when testing the hardware bias. According to the manufacturer's performance data, the ZAPD-2+ splitter exhibits a typical phase unbalance of approximately $0.23^{\circ}$ near the $1575.42$ MHz GPS L1 frequency, with a maximum rated phase unbalance of up to $2.0^{\circ}$. Therefore, the measured phase offsets are partially due to the RF splitter.
 
 \subsection{B210 Signal Generator Phase Bias Results}
 The B210 splitter test was used to measure the static inter channel phase bias, denoted as $\phi_0$. In this configuration, the same RF signal is applied to both receiver channels, so the expected geometric phase difference is zero. Any remaining measured inter channel phase offset is therefore attributed to the receiver channel phase bias rather than antenna geometry.
 
 The controlled splitter measurements showed that the B210 channel bias was repeatable across receiver restarts. A signal generator produced a sinusoidal test signal at GPS L1, which was divided with an RF splitter and applied to both B210 receive inputs. The B210 recorded both channels using the same multi channel receive configuration used for the satellite collections, so the measurement tested the phase repeatability of the receiver configuration used in the data collection.
 
+It is also critical to note the tolerances of the Mini-Circuits ZAPD-2-2+ RF Splitter when testing the hardware bias. According to the manufacturer's performance data, the ZAPD-2+ splitter exhibits a typical phase unbalance of approximately $0.23^{\circ}$ near the $1575.42$ MHz GPS L1 frequency, with a maximum rated phase unbalance of up to $2.0^{\circ}$. Therefore, the measured phase offsets are partially due to the RF splitter.
+
 Two repeatability checks were performed. In the first check, two recordings were separated by a full B210 power cycle. The measured phase bias changed from $-2.40^\circ$ to $-2.48^\circ$, a difference of $0.08^\circ$. In the second check, the receiver was operated for two hours before repeating the power cycle test. The measured phase bias changed from $-2.03^\circ$ to $-2.19^\circ$, a difference of $0.16^\circ$. These results, summarized in Table~\ref{tab:b210_bias_stability}, indicate that the mean inter channel phase bias remained stable at the sub degree level for the tested receiver configuration.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{B210 splitter-measured inter channel phase bias repeatability}
 \label{tab:b210_bias_stability}
@@ -217,6 +216,102 @@ After hot power cycle & $-2.19$ & $2.11$ & $0.16$ \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\subsection{JammerTest2025: Ramped CW Interference}
+
+The "Jammertest" is a large-scale event hosted annually in And\o ya, Norway, by the Norwegian Communications Authority (Nkom) and allied organizations. It provides a highly controlled environment to evaluate Position, Navigation, and Timing (PNT) resilience against active, high-power jamming and spoofing emissions~\cite{jammertest2024}. 
+
+The experimental setup consists of the same dual ublox ANN-MB-00-00 antennas, independent GP10 Labs bias tees, and the B210 SDR structure. Figure \ref{fig:setup_b210_biastree} shows the receiving hardware, specifically, the B210 and bias tees can be visible on the left side of the image. Figure \ref{fig:setup_antennas} shows the roof-mounted array, where the dual ublox antennas utilized for this test are secured on the left.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/setup_b210_biastree.jpeg}
+    \caption{Data acquisition hardware setup. The USRP B210 SDR and GP10 bias tees are explicitly visible on the left.}
+    \label{fig:setup_b210_biastree}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/setup_antennas.jpeg}
+    \caption{Roof-mounted antenna configuration. The dual ublox ANN-MB-00-00 antennas utilized for the array are secured on the left.}
+    \label{fig:setup_antennas}
+\end{figure}
+
+The specific dataset analyzed was captured during a power ramping test originating from Porcus Maior at the Ramnan mountain facility. The test occurred in 2025 on the second day of trials. The test commenced at 09:40 AM and contained the specific event labeled: \texttt{09:40-10:03 - 1.6.8 Jammer F8.1: 7.9 $\mu$W (-21dBm) to 50 W (47dBm) with 2 dB increments}. The target emitter was a CW jammer sweeping output power upward incrementally across the L1, G1, L2, L5, and E6 bands.
+
+The MATLAB SDR processed the first 600 seconds of data, outputting a sky plot, which identified multiple GNSS satellites (Figure \ref{fig:jammer_skyplot}). For analysis, three specific satellites were chosen based on their geometric locations: PRN 3 (located approximately overhead), PRN 12 (located near the horizon at a low elevation angle), and PRN 31 (positioned to the east).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/skyplot.jpg}
+    \caption{Sky plot and UTM coordinate variations generated from the initial segment of the Ramnan jamming test.}
+    \label{fig:jammer_skyplot}
+\end{figure}
+
+Analyzing the slaved-tracking data (\texttt{trkResults.mat}) for PRNs 3, 12, and 31 demonstrates the impact of the jamming on the correlator outputs. Figures \ref{fig:prn3_inphase}, \ref{fig:prn12_inphase}, and \ref{fig:prn31_inphase} plot the Signal-to-Noise Ratio (VSM value) and the In-Phase Standard Deviation. Across all three tracked satellites, as jammer power increases, Cn0 goes down. Simultaneously, the standard deviation of the in-phase prompt correlator output abruptly increases (spiking from approximately $3^\circ$ to nearly $100^\circ$) as the jammer overwhelms the C/A code, destroying the correlation peak. A similar degradation occurs in the quadrature channel, though it is omitted in this paper for conciseness. This behavior makes logical sense, because as the CW interference power rises, the thermal noise floor is eclipsed, causing the Delay Lock Loop (DLL) and Phase Lock Loop (PLL) discriminators to fail.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/Jamming Analysis for PRN 3.png}
+    \caption{PRN 3 (overhead): Signal-to-Noise Ratio and In-Phase Standard Deviation, demonstrating degrading signal strength and spiking deviation due to CW interference.}
+    \label{fig:prn3_inphase}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/Jamming Analysis for PRN 12.png}
+    \caption{PRN 12 (near horizon): Signal-to-Noise Ratio and In-Phase Standard Deviation during the ramping CW interference test.}
+    \label{fig:prn12_inphase}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/Jamming Analysis for PRN 31.png}
+    \caption{PRN 31 (east): Signal-to-Noise Ratio and In-Phase Standard Deviation during the ramping CW interference test.}
+    \label{fig:prn31_inphase}
+\end{figure}
+
+The inter-channel phase difference calculated via the slaved correlators and its associated standard deviation are plotted in Figures \ref{fig:prn3_phasediff}, \ref{fig:prn12_phasediff}, and \ref{fig:prn31_phasediff}. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/Phase Analysis for PRN 3.png}
+    \caption{PRN 3 (overhead): Correlator-derived Inter-Channel Phase Difference and Phase Standard Deviation, illustrating the failure of the slaved tracking loops under high interference.}
+    \label{fig:prn3_phasediff}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/Phase Analysis for PRN 12.png}
+    \caption{PRN 12 (near horizon): Correlator-derived Inter-Channel Phase Difference and Phase Standard Deviation.}
+    \label{fig:prn12_phasediff}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/Phase Analysis for PRN 31.png}
+    \caption{PRN 31 (east): Correlator-derived Inter-Channel Phase Difference and Phase Standard Deviation.}
+    \label{fig:prn31_phasediff}
+\end{figure}
+
+However, these post-correlation phase difference graphs do not accurately reflect the true Angle of Arrival of the jammer. Since slaved correlators rely on mixing the incoming signal with a locally generated C/A code replica, the correlators are combining pure noise and interference over the PRN sequence rather than isolating the CW tone. Consequently, the standard deviation of the phase difference dramatically increases (exceeding $50^\circ$), and the raw phase differences show no correlation.
+Thus, a raw pre-correlation phase difference is preferred for analyzing CW interference. 
+
+ Rather than relying on post-correlation metrics, the raw inter-channel phase difference is calculated directly from the baseband data. The algorithm pairs the complex IQ samples from Antenna 1 (denoted $s_1(t)$) and Antenna 2 (denoted $s_2(t)$). The phase difference is calculated by multiplying the complex sample of the second channel by the complex conjugate of the first channel, resulting in $\Delta\phi(t) = \angle(s_2(t) \cdot s_1^*(t))$. This calculation is performed over a 1000 ms moving integration window to smooth out thermal noise before the jammer activates.
+
+As represented in Figure \ref{fig:raw_antenna_phase}, during the initial low-power stages of the test, the raw inter-channel phase difference is appears chaotic, dominated by thermal noise. However, as the jammer's power steadily ramps up past 400 seconds, the CW interference overpowers the signal-to-noise ratio of the GNSS band. From approximately $t=415$ seconds until $t=580$ seconds, the receiver resolves the physical bearing of the jammer, rapidly converging to a rigid, highly stable average phase difference of $156^\circ$. The raw phase directly measures the phase offset of the dominant CW tone, producing a true $156^\circ$ bearing, where the correlator-based phase fails.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/rawphasediff.jpg}
+    \caption{Raw antenna phase difference over the 600-second window, showing random noise converging to a stable $156^\circ$ as the jammer power increases.}
+    \label{fig:raw_antenna_phase}
+\end{figure}
+
+\subsection{Conclusion}
+
+
+
 
 % =========================
 \bibliographystyle{IEEEtran}
