@@ -65,6 +65,8 @@ Dual channel samples are recorded using the UHD multi channel receiver interface
 \label{fig:kraken_daq}
 \end{figure}
 
+sadasdasda a 
+
 KrakenSDR data was collected using the KrakenRF data acquisition software, which records raw $8$ bit I/Q samples from the receiver's five RTL-SDR channels. The DAQ architecture used for this workflow is shown in Fig.~\ref{fig:kraken_daq}. The Realtek DAQ block receives samples from each RTL-SDR and writes them to circular buffers. The downstream processing chain then re buffers the streams, applies decimation, and estimates residual inter channel delay, gain, and phase corrections using the receiver's internal calibration source. This startup calibration is required so that the five receiver channels share a common phase reference. Although the diagram is from the HeIMDALL/Kerberos SDR DAQ documentation, the Kerberos SDR and KrakenSDR use the same RTL-SDR based receiver architecture, with the primary hardware difference being that the Kerberos SDR provides four channels while the KrakenSDR provides five \cite{peto2020heimdall}. This runtime calibration is not required for the B210.
 
 For this study, the KrakenRF software was used for calibrated recording rather than real time direction finding. After the DAQ software completed its startup calibration, the calibrated multi channel I/Q streams were saved for post processing. This preserved the channel alignment established by the KrakenSDR calibration procedure while allowing the recordings to be processed using the same phase bias and GNSS carrier phase analysis applied to the B210 data. 
