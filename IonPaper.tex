@@ -94,8 +94,6 @@ The raw phase angle for the paired channel is computed from the argument of this
 \frac{180}{\pi}\arg\left(z_B[n]\right).
 \end{equation}
 
-bladlsadasdl asdas dsa
-
 To match the analysis procedure used for the phase consistency check, negative phase values are shifted by $180^\circ$,
 
 \begin{equation}
@@ -115,6 +113,29 @@ Alternatively, for the raw pre-processed binary files, the phase difference is c
 \end{equation}
 
 This calculation is performed over a 1000 ms moving integration window.
+
+\subsection{Circular Standard Deviation Calculation}
+When analyzing raw angular phase data, linear standard deviation algorithms typically fails due to phase wrapping. For instance, angles such as $359^\circ$ and $1^\circ$ are considred to be separated by $2^\circ$, yet a linear standard deviation calculation would interpret them as $358^\circ$ apart.
+
+The circular standard deviation is computed by treating each phase angle measurement $\theta_i$ (for $i=1,2,\dots,N$) as a unit vector on the complex plane. The resultant vector components $\bar{C}$ and $\bar{S}$ are calculated as:
+\begin{equation}
+\bar{C}=\frac{1}{N}\sum_{i=1}^{N}\cos(\theta_i)
+\end{equation}
+\begin{equation}
+\bar{S}=\frac{1}{N}\sum_{i=1}^{N}\sin(\theta_i)
+\end{equation}
+
+Next, the mean vector length $R$, whicch represents the concentration of angles, is calculated as:
+\begin{equation}
+R=\sqrt{\bar{C}^2+\bar{S}^2}
+\end{equation}
+
+The value of $R$ ranges from $0$ (completely uniform dispersion) to $1$ (all angles are identical). The circular standard deviation $\sigma_c$, measured in radians, is then defined as:
+\begin{equation}
+\sigma_c=\sqrt{-2\ln(R)}
+\end{equation}
+
+For the final plot, $\sigma_c$ is multiplied by $180/\pi$ to convert the variance back into degrees.
 
 \subsection{Test Configurations}
 The test configurations are designed to compare inter channel phase behavior under three controlled collection conditions. Together, these configurations separate the effects of antenna geometry, receiver channel alignment, and static phase bias so that the B210 and KrakenSDR can be evaluated using the same general signal analysis where applicable.
@@ -332,6 +353,17 @@ As represented in Figure \ref{fig:raw_antenna_phase}, during the initial low-pow
     \includegraphics[width=\linewidth]{photos/rawphasediff.jpg}
     \caption{Raw antenna phase difference over the 600-second window, showing random noise converging to a stable $156^\circ$ as the jammer power increases.}
     \label{fig:raw_antenna_phase}
+\end{figure}
+
+Additionally, the circular standard deviation of the raw phase difference was calculated, shown in Figure \ref{fig:raw_phase_std_dev}. As detailed in Section II-D, applying the circular standard deviation rather than a linear calculation is very important here, as this gets rid of any spikes caused by phase boundary wrapping. Initially, the standard deviation remains at approximately $135^\circ$, which is a characteristic of random thermal noise.
+
+As the CW interference begins to overwhelm the random thermal noise, the standard deviation exhibits a staircase-like pattern. Each drop corelates with the 2 dB step increases in jammer power. During the peak interference period ($t=415$ to $t=580$ seconds), the standard deviation compresses to a minimum of under $20^\circ$. This validates the receiver's robust lock on the jammer's $156^\circ$ angle of arrival. After the jammer's immeditae drop in power near the 580-second mark, the standard deviation instantaneously jumps back to the baseline maximum, which confirms the return to a pure thermal noise environment.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/raw_phase_std_dev.jpg} % Update filename if necessary
+    \caption{Circular standard deviation of the raw phase difference. The distinct staircase descent reflects tightening phase variance as the jammer power increases in 2 dB steps.}
+    \label{fig:raw_phase_std_dev}
 \end{figure}
 
 \section{Conclusion}
