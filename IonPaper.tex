@@ -130,6 +130,8 @@ The third configuration uses a signal generator input. This configuration is use
 \subsection{Two Antenna Array Results}
 The KrakenSDR two channel subset was evaluated using Sets~3 and~4, which were collected with the same selected channel pair before and after a power cycle. This configuration follows the same two channel structure used by the B210, allowing the KrakenSDR to be evaluated in a comparable two-port arrangement. The adjusted phase means for PRNs~5, 13, and 18 are summarized in Table~\ref{tab:kraken_two_channel_phase}. All three PRNs show substantial changes in mean phase between the two collections.
 
+The adjusted phase means from the processed PRN figures are summarized in Table~\ref{tab:kraken_two_channel_phase}. PRNs~5, 13, and 18 were selected as representative examples from the processed plots. For the first selected channel pair, PRN~5 and PRN~18 show small changes after the power cycle, while PRN~13 shows a larger but still directly visible shift in the plotted mean. The second selected channel pair produces a different set of mean phase values, as expected when a different KrakenSDR channel grouping is used.
+
 \begin{table}[H]
 \centering
 \caption{KrakenSDR adjusted phase means for selected PRNs}
@@ -222,7 +224,7 @@ The controlled splitter measurements showed that the B210 channel bias was repea
 
 It is also critical to note the tolerances of the Mini-Circuits ZAPD-2-2+ RF Splitter when testing the hardware bias. According to the manufacturer's performance data, the ZAPD-2+ splitter exhibits a typical phase unbalance of approximately $0.23^{\circ}$ near the $1575.42$ MHz GPS L1 frequency, with a maximum rated phase unbalance of up to $2.0^{\circ}$. Therefore, the measured phase offsets are partially due to the RF splitter.
 
-Two repeatability checks were performed. In the first check, two recordings were separated by a full B210 power cycle. The measured phase bias changed from $-2.40^\circ$ to $-2.48^\circ$, a difference of $0.08^\circ$. In the second check, the receiver was operated for two hours before repeating the power cycle test. The measured phase bias changed from $-2.03^\circ$ to $-2.19^\circ$, a difference of $0.16^\circ$. These results, summarized in Table~\ref{tab:b210_bias_stability}, indicate that the mean inter channel phase bias remained stable at the sub degree level for the tested receiver configuration.
+Two repeatability checks were performed. In the first check, two recordings were separated by a full B210 power cycle. The measured phase bias changed from $-1.67^\circ$ to $-1.68^\circ$, a difference of $0.01^\circ$. In the second check, the receiver was operated for two hours before repeating the power cycle test. The measured phase bias changed from $-2.29^\circ$ to $-2.29^\circ$, a difference of $0.00^\circ$. These results, summarized in Table~\ref{tab:b210_bias_stability}, indicate that the mean inter channel phase bias remained stable at the sub degree level for the tested receiver configuration.
 
 \begin{table}[H]
 \centering
@@ -233,10 +235,10 @@ Two repeatability checks were performed. In the first check, two recordings were
 Condition & Mean Bias & Std. Dev. & Change \\
  & (deg) & (deg) & (deg) \\
 \midrule
-Initial recording & $-2.40$ & $2.10$ & -- \\
-After power cycle & $-2.48$ & $2.12$ & $0.08$ \\
-After two hour operation & $-2.03$ & $2.11$ & -- \\
-After hot power cycle & $-2.19$ & $2.11$ & $0.16$ \\
+Initial recording & $-1.67$ & $0.19$ & -- \\
+After power cycle & $-1.68$ & $0.19$ & $0.01$ \\
+After two hour operation & $-2.29$ & $0.19$ & -- \\
+After hot power cycle & $-2.29$ & $0.19$ & $0.00$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -261,11 +263,7 @@ The experimental setup consists of the same dual ublox ANN-MB-00-00 antennas, in
     \label{fig:setup_antennas}
 \end{figure}
 
-<<<<<<< HEAD
 The specific dataset analyzed was captured during a power ramping test originating from Porcus Maior at the Ramnan mountain facility. The test occurred in 2025 on the second day of trials. The test commenced at 09:40 AM and consisted of an event where the CW jammer power was incrementally increased. Starting at a low transmit power of 7.9~$\mu$W (-21~dBm), the power was ramped up in 2~dB increments until reaching 50~W (47~dBm) at 10:03 AM. The target emitter was a CW jammer sweeping output power upward incrementally across the L1, G1, L2, L5, and E6 bands.
-=======
-The specific dataset analyzed was captured during a power ramping test originating from Porcus Maior at the Ramnan mountain facility. The test occurred in 2025 on the second day of trials. The test commenced at 09:40 AM and contained the specific event labeled: \texttt{09:40-10:03 - 1.6.8 Jammer F8.1: 7.9 $\mu$W (-21dBm) to 50 W (47dBm) with 2 dB increments}. The target emitter was a CW jammer sweeping output power upward incrementally across the L1, G1, L2, L5, and E6 bands.
->>>>>>> ba13450aee06592739ec61dbf3b9af8af78c2584
 
 The MATLAB SDR processed the first 600 seconds of data, outputting a sky plot, which identified multiple GNSS satellites (Figure \ref{fig:jammer_skyplot}). For analysis, three specific satellites were chosen based on their geometric locations: PRN 3 (located approximately overhead), PRN 12 (located near the horizon at a low elevation angle), and PRN 31 (positioned to the east).
 
@@ -276,11 +274,7 @@ The MATLAB SDR processed the first 600 seconds of data, outputting a sky plot, w
     \label{fig:jammer_skyplot}
 \end{figure}
 
-<<<<<<< HEAD
 Analyzing the slaved-tracking data for PRNs 3, 12, and 31 demonstrates the impact of the jamming on the correlator outputs. Figures \ref{fig:prn3_inphase}, \ref{fig:prn12_inphase}, and \ref{fig:prn31_inphase} plot the Signal-to-Noise Ratio (VSM value) and the In-Phase Standard Deviation. Across all three tracked satellites, as jammer power increases, Cn0 goes down. Simultaneously, the standard deviation of the in-phase prompt correlator output abruptly increases (spiking from approximately $3^\circ$ to nearly $100^\circ$) as the jammer overwhelms the C/A code, destroying the correlation peak. A similar degradation occurs in the quadrature channel, though it is omitted in this paper for conciseness. This behavior makes logical sense, because as the CW interference power rises, the thermal noise floor is eclipsed, causing the Delay Lock Loop (DLL) and Phase Lock Loop (PLL) discriminators to fail.
-=======
-Analyzing the slaved-tracking data (\texttt{trkResults.mat}) for PRNs 3, 12, and 31 demonstrates the impact of the jamming on the correlator outputs. Figures \ref{fig:prn3_inphase}, \ref{fig:prn12_inphase}, and \ref{fig:prn31_inphase} plot the Signal-to-Noise Ratio (VSM value) and the In-Phase Standard Deviation. Across all three tracked satellites, as jammer power increases, Cn0 goes down. Simultaneously, the standard deviation of the in-phase prompt correlator output abruptly increases (spiking from approximately $3^\circ$ to nearly $100^\circ$) as the jammer overwhelms the C/A code, destroying the correlation peak. A similar degradation occurs in the quadrature channel, though it is omitted in this paper for conciseness. This behavior makes logical sense, because as the CW interference power rises, the thermal noise floor is eclipsed, causing the Delay Lock Loop (DLL) and Phase Lock Loop (PLL) discriminators to fail.
->>>>>>> ba13450aee06592739ec61dbf3b9af8af78c2584
 
 \begin{figure}[H]
     \centering
@@ -329,15 +323,9 @@ The inter-channel phase difference calculated via the slaved correlators and its
 However, these post-correlation phase difference graphs do not accurately reflect the true Angle of Arrival of the jammer. Since slaved correlators rely on mixing the incoming signal with a locally generated C/A code replica, the correlators are combining pure noise and interference over the PRN sequence rather than isolating the CW tone. Consequently, the standard deviation of the phase difference dramatically increases (exceeding $50^\circ$), and the raw phase differences show no correlation.
 Thus, a raw pre-correlation phase difference is preferred for analyzing CW interference. 
 
-<<<<<<< HEAD
 As detailed in Section II-C, the raw inter-channel phase difference is calculated directly from the baseband data by multiplying the complex sample of the second channel by the complex conjugate of the first channel. This bypasses the tracking loops entirely and is evaluated over a 1000 ms moving integration window.
 
 As represented in Figure \ref{fig:raw_antenna_phase}, during the initial low-power stages of the test, the raw inter-channel phase difference appears chaotic, dominated by thermal noise. However, as the jammer's power steadily ramps up past 400 seconds, the CW interference overpowers the signal-to-noise ratio of the GNSS band. From approximately $t=415$ seconds until $t=580$ seconds, the receiver resolves the physical bearing of the jammer, rapidly converging to a rigid, highly stable average phase difference of $156^\circ$. The raw phase directly measures the phase offset of the dominant CW tone, producing a true $156^\circ$ bearing, where the correlator-based phase fails.
-=======
- Rather than relying on post-correlation metrics, the raw inter-channel phase difference is calculated directly from the baseband data. The algorithm pairs the complex IQ samples from Antenna 1 (denoted $s_1(t)$) and Antenna 2 (denoted $s_2(t)$). The phase difference is calculated by multiplying the complex sample of the second channel by the complex conjugate of the first channel, resulting in $\Delta\phi(t) = \angle(s_2(t) \cdot s_1^*(t))$. This calculation is performed over a 1000 ms moving integration window to smooth out thermal noise before the jammer activates.
-
-As represented in Figure \ref{fig:raw_antenna_phase}, during the initial low-power stages of the test, the raw inter-channel phase difference is appears chaotic, dominated by thermal noise. However, as the jammer's power steadily ramps up past 400 seconds, the CW interference overpowers the signal-to-noise ratio of the GNSS band. From approximately $t=415$ seconds until $t=580$ seconds, the receiver resolves the physical bearing of the jammer, rapidly converging to a rigid, highly stable average phase difference of $156^\circ$. The raw phase directly measures the phase offset of the dominant CW tone, producing a true $156^\circ$ bearing, where the correlator-based phase fails.
->>>>>>> ba13450aee06592739ec61dbf3b9af8af78c2584
 
 \begin{figure}[H]
     \centering
@@ -346,7 +334,6 @@ As represented in Figure \ref{fig:raw_antenna_phase}, during the initial low-pow
     \label{fig:raw_antenna_phase}
 \end{figure}
 
-<<<<<<< HEAD
 \section{Conclusion}
 
 This paper was able to successfully validate the idea of utilizing a low-cost, two-element receiver based on the USRP B210 for GNSS Angle of Arrival (AoA) bearing estimation. By analyzing the hardware architecture of the B210, the observed inter-channel phase behaviors can be directly explained. The B210 employs a single shared Local Oscillator (LO) for both receive paths. This shared LO architecture is vital as  it solves the startup phase ambiguity problem unlike the Kraken B210.
@@ -354,12 +341,6 @@ This paper was able to successfully validate the idea of utilizing a low-cost, t
 However, the two-hour data collection demonstrated long-term phase drift. While the LO is shared, each channel within the AD9361 transceiver uses its own Low Noise Amplifiers (LNAs), Variable Gain Amplifiers (VGAs), analog baseband low-pass filters, and Analog-to-Digital Converters (ADCs). It is very likely that as the hardware operates continuously, uneven heating and thermal drift across these independent components induce differential group delays, leading to phase drift. In order to combat this, long recording data collection sessions may periodic software recalibration.
 
 The immediate next step is to create a reliable method for calculating the standard baseline vector of the antennas, allowing the system to translate relative phase differences into geographical headings. Additionally, future work can also include  implementing active beamsteering and null-steering algorithms. By directing a spatial null toward the bearing of the jammer, the interference can be canceled out, and the GNSS signal can be recovered.
-=======
-\subsection{Conclusion}
->>>>>>> ba13450aee06592739ec61dbf3b9af8af78c2584
-
-
-
 
 % =========================
 \bibliographystyle{IEEEtran}
