@@ -140,11 +140,32 @@ For the final plot, $\sigma_c$ is multiplied by $180/\pi$ to convert the varianc
 \subsection{Test Configurations}
 The test configurations are designed to compare inter channel phase behavior under three controlled collection conditions. Together, these configurations separate the effects of antenna geometry, receiver channel alignment, and static phase bias so that the B210 and KrakenSDR can be evaluated using the same general signal analysis where applicable.
 
-The first configuration uses a two antenna array. For the B210, this configuration maps directly onto the two available receive ports, with one antenna connected to each channel. For the five channel KrakenSDR, two receiver ports are selected and grouped together for a given test. Treating the KrakenSDR as a two channel subset allows the same two antenna analysis to be applied to both receivers and provides a direct comparison against the B210 test configuration. INSERT PHOTO OF TWO ANTENNA ARRAY HERE
+The first configuration uses a two antenna array. For the B210, this configuration maps directly onto the two available receive ports, with one antenna connected to each channel. For the five channel KrakenSDR, two receiver ports are selected and grouped together for a given test. Treating the KrakenSDR as a two channel subset allows the same two antenna analysis to be applied to both receivers and provides a direct comparison against the B210 test configuration. 
 
-The second configuration uses a roof mounted antenna on the Anne J. Smead Aerospace Engineering Sciences building. In this configuration, the antenna output is split to the two receiver channels under test. The split antenna configuration is used for both the KrakenSDR and the B210, and the same signal analysis is performed on both receivers. This configuration provides a common input signal to the paired channels, which is useful for evaluating channel alignment without changing the downstream analysis method. INSERT PHOTO OF ROOF ANTENNA SPLIT HERE
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/dual_antenna.png} 
+    \caption{Two-antenna array configuration utilizing dual u-blox active antennas separated by a half-wavelength baseline.}
+    \label{fig:dual_antenna_array}
+\end{figure}
 
-The third configuration uses a signal generator input. This configuration is used only with the B210 and is intended to estimate the B210 inter channel phase bias. A controlled signal generator input is useful because the receiver channels can be driven by a known common signal, allowing the measured phase offset between the two channels to be interpreted as a receiver channel bias for that configuration.
+The second configuration uses a roof mounted antenna on the Anne J. Smead Aerospace Engineering Sciences building. In this configuration, the antenna output is split to the two receiver channels under test. The split antenna configuration is used for both the KrakenSDR and the B210, and the same signal analysis is performed on both receivers. This configuration provides a common input signal to the paired channels, which is useful for evaluating channel alignment without changing the downstream analysis method. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/roof_split.png} 
+    \caption{Split roof antenna configuration used to supply a common input signal for evaluating inter-channel hardware drift.}
+    \label{fig:roof_antenna_split}
+\end{figure}
+
+The third configuration uses a signal generator input. This configuration is used only with the B210 and is intended to estimate the B210 inter channel phase bias. A controlled signal generator input is useful because the receiver channels can be driven by a known common signal, allowing the measured phase offset between the two channels to be interpreted as a receiver channel bias for that configuration. This setup specifically uses a B200 to transmit the signal, along with a Mini Circuits ZAPD-2-S+ Splitter. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/hardware.png}
+    \caption{Hardware bias test configuration utilizing a common RF signal split into both USRP receive channels to measure static inter-channel phase offset.}
+    \label{fig:hardware_bias_setup}
+\end{figure}
 
 \section{Results}
 
@@ -361,7 +382,7 @@ As the CW interference starts to overwhelm the random thermal noise, the standar
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth]{photos/raw_phase_std_dev.jpg} % Update filename if necessary
+    \includegraphics[width=\linewidth]{photos/raw_phase_std_dev.png} % Update filename if necessary
     \caption{Circular standard deviation of the raw phase difference. The distinct staircase descent reflects tightening phase variance as the jammer power increases in 2 dB steps.}
     \label{fig:raw_phase_std_dev}
 \end{figure}
@@ -388,11 +409,11 @@ Similar to the ramping test, the initial measurements illustrates random thermal
 
 \section{Conclusion}
 
-This paper was able to successfully validate the idea of utilizing a low-cost, two-element receiver based on the USRP B210 for GNSS Angle of Arrival (AoA) bearing estimation. By analyzing the hardware architecture of the B210, the observed inter-channel phase behaviors can be directly explained. The B210 employs a single shared Local Oscillator (LO) for both receive paths. This shared LO architecture is vital as  it solves the startup phase ambiguity problem unlike the Kraken B210.
+This paper was able to successfully validate the idea of using a low-cost, two-element receiver based on the USRP B210 for GNSS Angle of Arrival (AoA) bearing estimation. By analyzing the hardware architecture of the B210, the inter-channel phase behaviors can be explained. The B210 utilizes a shared Local Oscillator (LO) for both channels. This shared LO architecture is very important as it solves the startup phase ambiguity problem unlike the KrakenSDR. For example, while the KrakenSDR demonstrated mean phase shifts of up to $71.3^\circ$ after a power cycle, the B210 maintained a consistent hardware phase bias within $0.01^\circ$ and showed small satellite phase shifts, such $1.37^\circ$ change for PRN 10.
 
-However, the two-hour data collection demonstrated long-term phase drift. While the LO is shared, each channel within the AD9361 transceiver uses its own Low Noise Amplifiers (LNAs), Variable Gain Amplifiers (VGAs), analog baseband low-pass filters, and Analog-to-Digital Converters (ADCs). It is very likely that as the hardware operates continuously, uneven heating and thermal drift across these independent components induce differential group delays, leading to phase drift. In order to combat this, long recording data collection sessions may periodic software recalibration.
+However, the two-hour data collection demonstrated long-term phase drift. Specifically, the split-antenna test showed the B210 mean phase for PRN 15 drifted from $98.76^\circ$ to $118.48^\circ$ over 118 minutes, while PRN 25 drifted by over $22^\circ$. While the LO is shared, each channel within the AD9361 transceiver uses its own Low Noise Amplifiers (LNAs), Variable Gain Amplifiers (VGAs), analog baseband low-pass filters, and Analog-to-Digital Converters (ADCs). It is very likely that as the hardware operates continuously, uneven heating across these independent components lead to phase drift between the two channels. This is corroborated by the high standard deviations of approximately $80^\circ$ observed across the B210 PRNs during continuous operation. In order to combat this, long recording data collection sessions may require periodic recalibration.
 
-The immediate next step is to create a reliable method for calculating the standard baseline vector of the antennas, allowing the system to translate relative phase differences into geographical headings. Additionally, future work can also include  implementing active beamsteering and null-steering algorithms. By directing a spatial null toward the bearing of the jammer, the interference can be canceled out, and the GNSS signal can be recovered.
+The immediate next step is to create a reliable method for calculating the standard baseline vector of the antennas, allowing the system to translate relative phase differences into geographical headings. This is supported by the Jammertest results, where the raw pre-correlation algorithm successfully isolated a stable $156^\circ$ relative phase difference with a circular standard deviation of under $20^\circ$ during a 50~W CW interference event. Additionally, future work can also include implementing active null-steering algorithms. By directing a null toward the bearing of the jammer, the interference can be canceled out, and the GNSS signal can be recovered.
 
 % =========================
 \bibliographystyle{IEEEtran}
