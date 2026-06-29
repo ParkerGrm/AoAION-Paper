@@ -357,7 +357,7 @@ As represented in Figure \ref{fig:raw_antenna_phase}, during the initial low-pow
 
 Additionally, the circular standard deviation of the raw phase difference was calculated, shown in Figure \ref{fig:raw_phase_std_dev}. As detailed in Section II-D, applying the circular standard deviation rather than a linear calculation is very important here, as this gets rid of any spikes caused by phase boundary wrapping. Initially, the standard deviation remains at approximately $135^\circ$, which is a characteristic of random thermal noise.
 
-As the CW interference begins to overwhelm the random thermal noise, the standard deviation exhibits a staircase-like pattern. Each drop corelates with the 2 dB step increases in jammer power. During the peak interference period ($t=415$ to $t=580$ seconds), the standard deviation compresses to a minimum of under $20^\circ$. This validates the receiver's robust lock on the jammer's $156^\circ$ angle of arrival. After the jammer's immeditae drop in power near the 580-second mark, the standard deviation instantaneously jumps back to the baseline maximum, which confirms the return to a pure thermal noise environment.
+As the CW interference starts to overwhelm the random thermal noise, the standard deviation exhibits a staircase-like pattern. Each drop corelates with the 2 dB step increases in jammer power. During the peak interference period ($t=415$ to $t=580$ seconds), the standard deviation compresses to a minimum of under $20^\circ$. This validates the receiver's robust lock on the jammer's $156^\circ$ angle of arrival. After the jammer's immeditae drop in power near the 580-second mark, the standard deviation instantaneously jumps back to the baseline maximum, which confirms the return to a pure thermal noise environment.
 
 \begin{figure}[H]
     \centering
@@ -365,6 +365,26 @@ As the CW interference begins to overwhelm the random thermal noise, the standar
     \caption{Circular standard deviation of the raw phase difference. The distinct staircase descent reflects tightening phase variance as the jammer power increases in 2 dB steps.}
     \label{fig:raw_phase_std_dev}
 \end{figure}
+
+\subsection{Secondary Jammertest Event Verification}
+
+To corroborate the capability of the B210 to resolve a CW emitter's bearing, a secondary Jammertest event was analyzed. The raw phase difference and its corresponding circular standard deviation for this subsequent test are presented in Figures \ref{fig:secondary_raw_phase} and \ref{fig:secondary_phase_std}. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/raw_phase_diff_2.png}
+    \caption{Raw pre-correlation phase difference for the secondary Jammertest event, demonstrating convergence to a stable bearing during high-power interference.}
+    \label{fig:secondary_raw_phase}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/std_phase_diff_2.png}
+    \caption{Circular standard deviation for the secondary event. The variance rapidly compresses as the jammer overpowers the thermal noise floor, before rebounding when the signal drops.}
+    \label{fig:secondary_phase_std}
+\end{figure}
+
+Similar to the ramping test, the initial measurements illustrates random thermal noise, which is shown by a random raw phase difference and a high standard deviation. Once the high-power CW interference turns on, the raw phase difference converges to a rigid, stable phase difference angle. This leads to the circular standard deviation lowering significantly, showing that the b210 locks in on the jammer's specific AoA.
 
 \section{Conclusion}
 
