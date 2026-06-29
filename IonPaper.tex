@@ -258,6 +258,39 @@ USRP B210 & 5  & $121.63^{\circ}$ & $122.31^{\circ}$ & $111.77^{\circ}$ \\
 \end{tabular}
 \end{table}
 
+\subsection{KrakenSDR Power Cycle Phase Ambiguity}
+
+In order to further corroborate the startup phase ambiguity for the KrakenSDR, the split roof antenna configuration was utilized. The signal from the roof antenna was divided via the RF splitter and fed into two channels of the SDR. The system first recorded an initial dataset, then underwent a power cycle, and then recorded a secondary dataset.
+
+Because the exact same physical signal is used for both channels, the true inter-channel phase difference is only due to the static hardware bias of the receiver and the constant phase unbalance of the splitter. However, the post-correlation phase consistency verification further reveals the limitation in the KrakenSDR. As shown in Figures \ref{fig:kraken_prn8}--\ref{fig:kraken_prn28}, the inter-channel phase difference is completely random across all tracked satellites (PRNs 8, 10, 23, and 28) immediately following the power cycle. This shows that the independent fractional-N synthesizers which drive the RTL-SDR tuners inside the KrakenSDR initialize with random phase offsets every time the device is powered on. In other words, the raw hardware phase of the KrakenSDR is fundamentally ambiguous, therefore, the entirely unreliable for bearing estimation.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/prn8_consistency.png}
+    \caption{KrakenSDR inter-channel phase difference for PRN 8 before and after a power cycle, demonstrating a severe, unpredictable phase shift.}
+    \label{fig:kraken_prn8}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/prn10_consistency.png}
+    \caption{Phase consistency verification for PRN 10, illustrating the random startup phase offset of the KrakenSDR tuners.}
+    \label{fig:kraken_prn10}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/prn23_consistency.png}
+    \caption{Phase consistency verification for PRN 23 across a hardware power cycle.}
+    \label{fig:kraken_prn23}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{photos/prn28_consistency.png}
+    \caption{Phase consistency verification for PRN 28, confirming the ambiguous hardware startup state.}
+    \label{fig:kraken_prn28}
+\end{figure}
 
 \subsection{B210 Signal Generator Phase Bias Results}
 The B210 splitter test was used to measure the static inter channel phase bias, denoted as $\phi_0$. In this configuration, the same RF signal is applied to both receiver channels, so the expected geometric phase difference is zero. Any remaining measured inter channel phase offset is therefore attributed to the receiver channel phase bias rather than antenna geometry.
